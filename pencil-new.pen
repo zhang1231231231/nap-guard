@@ -1,0 +1,1168 @@
+{
+  "version": "2.8",
+  "children": [
+    {
+      "type": "frame",
+      "id": "x0TV7",
+      "x": 0,
+      "y": 0,
+      "name": "Dashboard",
+      "width": 402,
+      "height": 852,
+      "fill": "$--bg-primary",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "pRwAG",
+          "name": "statusBar",
+          "width": "fill_container",
+          "height": 62,
+          "fill": "none",
+          "padding": [
+            0,
+            24
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "WMorf",
+              "name": "time",
+              "fill": "#000000",
+              "content": "9:41",
+              "fontFamily": "$--font-secondary",
+              "fontSize": 16,
+              "fontWeight": "600"
+            },
+            {
+              "type": "frame",
+              "id": "Q9zcX",
+              "name": "icons",
+              "gap": 6,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "uRVSn",
+                  "width": 16,
+                  "height": 16,
+                  "iconFontName": "wifi",
+                  "iconFontFamily": "lucide",
+                  "fill": "$--text-primary"
+                },
+                {
+                  "type": "icon_font",
+                  "id": "yGPFY",
+                  "width": 22,
+                  "height": 12,
+                  "iconFontName": "battery",
+                  "iconFontFamily": "lucide",
+                  "fill": "$--text-primary"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "XoeB9",
+          "name": "content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": "$--gap-major",
+          "padding": [
+            24,
+            24,
+            48,
+            24
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "AUKAf",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 4,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "DLZPm",
+                  "fill": "$--text-primary",
+                  "content": "午休卫士",
+                  "fontFamily": "$--font-primary",
+                  "fontSize": "$--font-title",
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "PNW1s",
+                  "fill": "$--text-secondary",
+                  "content": "智能监控鼾声，科学唤醒午睡",
+                  "fontFamily": "$--font-primary",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "NU8W5",
+              "name": "actionCard",
+              "width": "fill_container",
+              "fill": "$--bg-secondary",
+              "cornerRadius": "$--radius-card",
+              "layout": "vertical",
+              "padding": [
+                0,
+                16
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "vmcFi",
+                  "name": "durRow",
+                  "width": "fill_container",
+                  "height": 52,
+                  "stroke": {
+                    "thickness": {
+                      "bottom": 0.5
+                    },
+                    "fill": "$--divider"
+                  },
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Fq8zM",
+                      "fill": "$--text-primary",
+                      "content": "闹钟时长",
+                      "fontFamily": "$--font-primary",
+                      "fontSize": 17,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "XMD0F",
+                      "name": "durValFrame",
+                      "gap": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "flCxg",
+                          "fill": "$--color-accent",
+                          "content": "30",
+                          "fontFamily": "$--font-primary",
+                          "fontSize": 17,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "aQYtV",
+                          "fill": "$--text-secondary",
+                          "content": "分钟",
+                          "fontFamily": "$--font-primary",
+                          "fontSize": 17,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "icon_font",
+                          "id": "JICTv",
+                          "width": 16,
+                          "height": 16,
+                          "iconFontName": "chevron-right",
+                          "iconFontFamily": "lucide",
+                          "fill": "$--text-tertiary"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "tAn8X",
+                  "name": "threshRow",
+                  "width": "fill_container",
+                  "height": 52,
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "iyQvh",
+                      "fill": "$--text-primary",
+                      "content": "入睡判定 (持续打鼾)",
+                      "fontFamily": "$--font-primary",
+                      "fontSize": 17,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "9aT0o",
+                      "name": "threshValFrame",
+                      "gap": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "ufzhr",
+                          "fill": "$--color-accent",
+                          "content": "5",
+                          "fontFamily": "$--font-primary",
+                          "fontSize": 17,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "Zy33o",
+                          "fill": "$--text-secondary",
+                          "content": "分钟",
+                          "fontFamily": "$--font-primary",
+                          "fontSize": 17,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "icon_font",
+                          "id": "xOGyO",
+                          "width": 16,
+                          "height": 16,
+                          "iconFontName": "chevron-right",
+                          "iconFontFamily": "lucide",
+                          "fill": "$--text-tertiary"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "ge70v",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "JJhSu",
+                  "fill": "$--text-secondary",
+                  "content": "最近记录",
+                  "fontFamily": "$--font-primary",
+                  "fontSize": 13,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "frame",
+                  "id": "FGfQq",
+                  "width": "fill_container",
+                  "fill": "$--bg-secondary",
+                  "cornerRadius": "$--radius-card",
+                  "padding": 16,
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "uwt5H",
+                      "layout": "vertical",
+                      "gap": 2,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "wIHUP",
+                          "fill": "$--text-primary",
+                          "content": "今天 12:30",
+                          "fontFamily": "$--font-primary",
+                          "fontSize": 17,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "peBOl",
+                          "fill": "$--text-secondary",
+                          "content": "入睡判定用时 8分钟",
+                          "fontFamily": "$--font-primary",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "UxWQU",
+                      "fill": "$--text-primary",
+                      "content": "35分钟",
+                      "fontFamily": "$--font-primary",
+                      "fontSize": 17,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "IZJzp",
+              "name": "startBtnSec",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "NYQtI",
+                  "name": "startBtn",
+                  "width": "fill_container",
+                  "height": 50,
+                  "fill": "$--color-accent",
+                  "cornerRadius": 10,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "WrQAi",
+                      "fill": "$--text-on-accent",
+                      "content": "开启午休监控",
+                      "fontFamily": "$--font-primary",
+                      "fontSize": 17,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "9uvMB",
+                  "fill": "$--text-secondary",
+                  "content": "开启后手机将实时检测你的鼾声",
+                  "textAlign": "center",
+                  "fontFamily": "$--font-primary",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "sk7Zu",
+      "x": 500,
+      "y": 0,
+      "name": "Monitoring",
+      "width": 402,
+      "height": 852,
+      "fill": "$--bg-primary",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "VOIPr",
+          "name": "mStatusBar",
+          "width": "fill_container",
+          "height": 62,
+          "fill": "none",
+          "padding": [
+            0,
+            24
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "ZKgF0",
+              "fill": "#000000",
+              "content": "9:45",
+              "fontFamily": "Inter",
+              "fontSize": 16,
+              "fontWeight": "600"
+            },
+            {
+              "type": "frame",
+              "id": "TO4ic",
+              "name": "mIcons",
+              "gap": 6,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "rPO7n",
+                  "width": 16,
+                  "height": 16,
+                  "iconFontName": "wifi",
+                  "iconFontFamily": "lucide",
+                  "fill": "$--text-primary"
+                },
+                {
+                  "type": "icon_font",
+                  "id": "AAuql",
+                  "width": 22,
+                  "height": 12,
+                  "iconFontName": "battery",
+                  "iconFontFamily": "lucide",
+                  "fill": "$--text-primary"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "otEYn",
+          "name": "mContent",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": "$--gap-major",
+          "padding": [
+            48,
+            24,
+            64,
+            24
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "UQeKQ",
+              "layout": "vertical",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "YwoQs",
+                  "fill": "$--text-secondary",
+                  "content": "正在监控睡眠",
+                  "fontFamily": "$--font-primary",
+                  "fontSize": 15,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "text",
+                  "id": "Sw5N6",
+                  "fill": "$--text-primary",
+                  "content": "00:04:21",
+                  "fontFamily": "$--font-primary",
+                  "fontSize": 44,
+                  "fontWeight": "300"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "GYxTz",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 32,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "KRalF",
+                  "width": 120,
+                  "height": 120,
+                  "cornerRadius": 60,
+                  "stroke": {
+                    "thickness": 2,
+                    "fill": "$--color-accent"
+                  },
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "7PipE",
+                      "width": 40,
+                      "height": 40,
+                      "iconFontName": "mic",
+                      "iconFontFamily": "lucide",
+                      "fill": "$--color-accent"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "tO3GH",
+                  "layout": "vertical",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "tNSQ2",
+                      "fill": "$--text-primary",
+                      "content": "已检测到鼾声...",
+                      "fontFamily": "$--font-primary",
+                      "fontSize": 16,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "5UKNf",
+                      "fill": "$--text-secondary",
+                      "content": "已持续检测 2分钟",
+                      "fontFamily": "$--font-primary",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "EoK0E",
+              "layout": "vertical",
+              "gap": 4,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "QTLi5",
+                  "fill": "$--text-secondary",
+                  "content": "已检测到鼾声 2 分钟",
+                  "fontFamily": "$--font-primary",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "Lgwhs",
+                  "fill": "$--text-primary",
+                  "content": "持续打鼾满 5 分钟后将自动开启闹钟",
+                  "fontFamily": "$--font-primary",
+                  "fontSize": 14,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "UrMo2",
+              "width": 200,
+              "height": 50,
+              "cornerRadius": 25,
+              "stroke": {
+                "thickness": 1,
+                "fill": "$--border-strong"
+              },
+              "gap": 8,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "9yQc1",
+                  "width": 16,
+                  "height": 16,
+                  "iconFontName": "x",
+                  "iconFontFamily": "lucide",
+                  "fill": "$--text-primary"
+                },
+                {
+                  "type": "text",
+                  "id": "eex1K",
+                  "fill": "$--text-primary",
+                  "content": "取消监控",
+                  "fontFamily": "$--font-primary",
+                  "fontSize": 17,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "mCru0",
+      "x": 1000,
+      "y": 0,
+      "name": "Alarm",
+      "width": 402,
+      "height": 852,
+      "fill": "#FFFFFF",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "LkRpX",
+          "name": "aStatusBar",
+          "width": "fill_container",
+          "height": 62,
+          "fill": "none",
+          "padding": [
+            0,
+            24
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "cX2N7",
+              "fill": "$--text-on-accent",
+              "content": "1:05",
+              "fontFamily": "Inter",
+              "fontSize": 16,
+              "fontWeight": "600"
+            },
+            {
+              "type": "frame",
+              "id": "QRkda",
+              "name": "aIcons",
+              "gap": 6,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "kFwxp",
+                  "width": 16,
+                  "height": 16,
+                  "iconFontName": "wifi",
+                  "iconFontFamily": "lucide",
+                  "fill": "$--text-on-accent"
+                },
+                {
+                  "type": "icon_font",
+                  "id": "1wpZJ",
+                  "width": 22,
+                  "height": 12,
+                  "iconFontName": "battery",
+                  "iconFontFamily": "lucide",
+                  "fill": "$--text-on-accent"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "LKlMs",
+          "name": "aContent",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": "$--gap-major",
+          "padding": [
+            64,
+            24
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "R23pt",
+              "layout": "vertical",
+              "gap": 16,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "n3De6",
+                  "width": 64,
+                  "height": 64,
+                  "iconFontName": "alarm-check",
+                  "iconFontFamily": "lucide",
+                  "fill": "$--color-accent"
+                },
+                {
+                  "type": "text",
+                  "id": "Q9gHC",
+                  "fill": "$--text-primary",
+                  "content": "该起床啦",
+                  "fontFamily": "$--font-primary",
+                  "fontSize": 40,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "S1dGm",
+                  "fill": "$--text-secondary",
+                  "content": "已完成预定午休目标",
+                  "fontFamily": "$--font-primary",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "cnCf6",
+              "width": "fill_container",
+              "fill": "$--bg-secondary",
+              "cornerRadius": 16,
+              "layout": "vertical",
+              "gap": 24,
+              "padding": [
+                32,
+                16
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "jgR6z",
+                  "width": "fill_container",
+                  "justifyContent": "space_around",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "sn9Vy",
+                      "layout": "vertical",
+                      "gap": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "ZpUX6",
+                          "fill": "$--text-secondary",
+                          "content": "总时长",
+                          "fontFamily": "$--font-primary",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "ZS8cE",
+                          "fill": "$--text-primary",
+                          "content": "35 分钟",
+                          "fontFamily": "$--font-primary",
+                          "fontSize": 26,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "YHRKD",
+                      "layout": "vertical",
+                      "gap": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "XaPhe",
+                          "fill": "$--text-secondary",
+                          "content": "稳睡时长",
+                          "fontFamily": "$--font-primary",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "u6Sp4",
+                          "fill": "$--text-primary",
+                          "content": "30 分钟",
+                          "fontFamily": "$--font-primary",
+                          "fontSize": 26,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "C0wPb",
+              "width": "fill_container",
+              "height": 56,
+              "fill": "$--color-accent",
+              "cornerRadius": 12,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "3iN0x",
+                  "fill": "$--text-on-accent",
+                  "content": "关闭闹钟",
+                  "fontFamily": "$--font-primary",
+                  "fontSize": 18,
+                  "fontWeight": "600"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "--bg-primary": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#0D0D0D"
+        },
+        {
+          "value": "#FFFFFF"
+        },
+        {
+          "value": "#F2F2F7"
+        }
+      ]
+    },
+    "--bg-secondary": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#1A1A1A"
+        },
+        {
+          "value": "#F4F4F5"
+        },
+        {
+          "value": "#FFFFFF"
+        }
+      ]
+    },
+    "--bg-tertiary": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#2A2A2A"
+        },
+        {
+          "value": "#E4E4E7"
+        },
+        {
+          "value": "#E5E5EA"
+        }
+      ]
+    },
+    "--border-strong": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#1A1A1A"
+        },
+        {
+          "value": "#E4E4E7"
+        },
+        {
+          "value": "#C6C6C8"
+        }
+      ]
+    },
+    "--border-subtle": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#2A2A2A"
+        },
+        {
+          "value": "#F4F4F5"
+        },
+        {
+          "value": "#D1D1D6"
+        }
+      ]
+    },
+    "--color-accent": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#C9A962"
+        },
+        {
+          "value": "#000000"
+        },
+        {
+          "value": "#07C160"
+        }
+      ]
+    },
+    "--divider": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#5A5A5A"
+        },
+        {
+          "value": "#E4E4E7"
+        },
+        {
+          "value": "#E5E5EA"
+        }
+      ]
+    },
+    "--font-body": {
+      "type": "number",
+      "value": [
+        {
+          "value": 16
+        },
+        {
+          "value": 14
+        },
+        {
+          "value": 17
+        }
+      ]
+    },
+    "--font-caption": {
+      "type": "number",
+      "value": [
+        {
+          "value": 12
+        },
+        {
+          "value": 11
+        },
+        {
+          "value": 12
+        }
+      ]
+    },
+    "--font-headline": {
+      "type": "number",
+      "value": [
+        {
+          "value": 16
+        },
+        {
+          "value": 24
+        },
+        {
+          "value": 20
+        }
+      ]
+    },
+    "--font-large-title": {
+      "type": "number",
+      "value": 48
+    },
+    "--font-metric": {
+      "type": "number",
+      "value": [
+        {
+          "value": 42
+        },
+        {
+          "value": 48
+        },
+        {
+          "value": 34
+        }
+      ]
+    },
+    "--font-primary": {
+      "type": "string",
+      "value": [
+        {
+          "value": "Bebas Neue"
+        },
+        {
+          "value": "Outfit"
+        },
+        {
+          "value": "PingFang SC"
+        }
+      ]
+    },
+    "--font-secondary": {
+      "type": "string",
+      "value": [
+        {
+          "value": "Cormorant Garamond"
+        },
+        {
+          "value": "Inter"
+        },
+        {
+          "value": "System"
+        }
+      ]
+    },
+    "--font-title": {
+      "type": "number",
+      "value": [
+        {
+          "value": 22
+        },
+        {
+          "value": 40
+        },
+        {
+          "value": 34
+        }
+      ]
+    },
+    "--gap-content": {
+      "type": "number",
+      "value": [
+        {
+          "value": 24
+        },
+        {
+          "value": 16
+        },
+        {
+          "value": 16
+        }
+      ]
+    },
+    "--gap-major": {
+      "type": "number",
+      "value": [
+        {
+          "value": 32
+        },
+        {
+          "value": 32
+        },
+        {
+          "value": 32
+        }
+      ]
+    },
+    "--gap-section": {
+      "type": "number",
+      "value": [
+        {
+          "value": 20
+        },
+        {
+          "value": 20
+        },
+        {
+          "value": 20
+        }
+      ]
+    },
+    "--text-disabled": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#5A5A5A"
+        },
+        {
+          "value": "#D4D4D8"
+        },
+        {
+          "value": "#AEAEB2"
+        }
+      ]
+    },
+    "--text-muted": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#6A6A6A"
+        },
+        {
+          "value": "#E4E4E7"
+        },
+        {
+          "value": "#C7C7CC"
+        }
+      ]
+    },
+    "--text-on-accent": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#0D0D0D"
+        },
+        {
+          "value": "#FFFFFF"
+        },
+        {
+          "value": "#FFFFFF"
+        }
+      ]
+    },
+    "--text-primary": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#F5F4F2"
+        },
+        {
+          "value": "#000000"
+        },
+        {
+          "value": "#000000"
+        }
+      ]
+    },
+    "--text-secondary": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#8A8A8A"
+        },
+        {
+          "value": "#71717A"
+        },
+        {
+          "value": "#8E8E93"
+        }
+      ]
+    },
+    "--text-tertiary": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#7A7A7A"
+        },
+        {
+          "value": "#A1A1AA"
+        },
+        {
+          "value": "#AEAEB2"
+        }
+      ]
+    },
+    "--font-hero": {
+      "type": "number",
+      "value": [
+        {
+          "value": 96
+        },
+        {
+          "value": 80
+        }
+      ]
+    },
+    "--radius-card": {
+      "type": "number",
+      "value": [
+        {
+          "value": 16
+        },
+        {
+          "value": 12
+        }
+      ]
+    },
+    "--radius-pill": {
+      "type": "number",
+      "value": [
+        {
+          "value": 32
+        },
+        {
+          "value": 100
+        }
+      ]
+    }
+  }
+}
