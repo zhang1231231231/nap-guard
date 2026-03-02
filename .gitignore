@@ -1,0 +1,58 @@
+## Android 编译产物
+.gradle/
+build/
+app/build/
+**/build/
+
+## 本地配置文件（含 Keystore 路径，不应入库）
+local.properties
+*.jks
+*.keystore
+
+## Android Studio / IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+.idea/caches/
+.idea/libraries/
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+
+## Gradle Wrapper 可执行文件（保留 .properties）
+gradle/wrapper/gradle-wrapper.jar
+gradlew
+gradlew.bat
+
+## APK / AAB 构建输出
+*.apk
+*.aab
+*.ap_
+*.dex
+
+## ProGuard 映射文件（可保留，按需决定）
+mapping.txt
+seeds.txt
+usage.txt
+
+## NDK / C++ 编译产物
+*.so
+obj/
+
+## macOS 系统文件
+.DS_Store
+.AppleDouble
+.LSOverride
+
+## 测试覆盖率报告
+/app/merged_manifests/
+/app/intermediates/
+/app/outputs/
+
+## Kotlin 增量编译缓存
+**/.kotlin/
+
+## Pencil 设计文件（大型二进制，可选择是否追踪）
+# pencil-new.pen
