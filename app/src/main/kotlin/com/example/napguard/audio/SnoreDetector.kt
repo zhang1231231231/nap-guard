@@ -29,16 +29,18 @@ class SnoreDetector {
     companion object {
         private const val TAG = "SnoreDetector"
 
-        private const val SAMPLE_RATE = 16000          // 16kHz 采样率
-        private const val CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_MONO
-        private const val AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT
+        const val SAMPLE_RATE = 16000          // 16kHz 采样率
+        const val CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_MONO
+        const val AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT
 
-        private const val SNORE_DB_THRESHOLD = 45.0   // 鼾声振幅阈值（dB）
-        private const val FRAME_DURATION_MS = 100L     // 每帧分析时长
+        const val SNORE_DB_THRESHOLD = 45.0   // 鼾声振幅阈值（dB）
+        const val FRAME_DURATION_MS = 100L     // 每帧分析时长
 
-        private val BUFFER_SIZE = AudioRecord.getMinBufferSize(
-            SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT
-        ).coerceAtLeast(4096)
+        val BUFFER_SIZE = try {
+            AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT).coerceAtLeast(4096)
+        } catch (e: Exception) {
+            4096 // Fallback for unit tests
+        }
     }
 
     data class AudioFrame(
@@ -60,19 +62,20 @@ class SnoreDetector {
         )
 
         if (audioRecord.state != AudioRecord.STATE_INITIALIZED) {
-            Log.e(TAG, "AudioRecord 初始化失败")
+            // 在真机上 Log.e，在测试中可以使用 println 或忽略
+            try { Log.e(TAG, "AudioRecord 初始化失败") } catch (e: Exception) { println("AudioRecord 初始化失败") }
             return@flow
         }
 
         val buffer = ShortArray(BUFFER_SIZE)
         audioRecord.startRecording()
-        Log.d(TAG, "开始录音")
+        try { Log.d(TAG, "开始录音") } catch (e: Exception) { println("开始录音") }
 
         try {
             while (coroutineContext.isActive) {
                 val read = audioRecord.read(buffer, 0, buffer.size)
                 if (read > 0) {
-                    val db = calculateDecibels(buffer, read)
+                    val db = processAudio(buffer, read)
                     val isSnore = db > SNORE_DB_THRESHOLD
                     emit(AudioFrame(decibels = db, isSnoreDetected = isSnore))
                 }
@@ -80,9 +83,17 @@ class SnoreDetector {
         } finally {
             audioRecord.stop()
             audioRecord.release()
-            Log.d(TAG, "停止录音，资源已释放")
+            try { Log.d(TAG, "停止录音，资源已释放") } catch (e: Exception) { println("停止录音，资源已释放") }
         }
     }.flowOn(Dispatchers.IO)
+
+    /**
+     * 处理音频数据，返回分贝值
+     * 暴露为 internal 以便单元测试
+     */
+    internal fun processAudio(buffer: ShortArray, readCount: Int): Double {
+        return calculateDecibels(buffer, readCount)
+    }
 
     /**
      * 计算 PCM 缓冲区的 RMS 振幅，并转换为分贝值
