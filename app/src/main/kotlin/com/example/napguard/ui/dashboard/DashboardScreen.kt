@@ -1,7 +1,12 @@
 package com.example.napguard.ui.dashboard
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -40,6 +45,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.napguard.service.NapMonitorService
@@ -58,6 +64,17 @@ fun DashboardScreen(
 
     var showAlarmDialog by remember { mutableStateOf(false) }
     var showTriggerDialog by remember { mutableStateOf(false) }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            startMonitorService(context, uiState.alarmDurationMin, uiState.sleepTriggerMin)
+            onStartMonitoring()
+        } else {
+            Toast.makeText(context, "需要麦克风权限来监测鼾声", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     if (showAlarmDialog) {
         DurationPickerDialog(
@@ -138,8 +155,16 @@ fun DashboardScreen(
             ) {
                 Button(
                     onClick = {
-                        startMonitorService(context, uiState.alarmDurationMin, uiState.sleepTriggerMin)
-                        onStartMonitoring()
+                        val permissionCheck = ContextCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.RECORD_AUDIO
+                        )
+                        if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
+                            startMonitorService(context, uiState.alarmDurationMin, uiState.sleepTriggerMin)
+                            onStartMonitoring()
+                        } else {
+                            permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                        }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
