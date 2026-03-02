@@ -21,10 +21,10 @@ class NapRepository @Inject constructor(
 ) {
     companion object {
         val KEY_ALARM_DURATION_MIN = intPreferencesKey("alarm_duration_min")
-        val KEY_SLEEP_TRIGGER_MIN = intPreferencesKey("sleep_trigger_min")
+        val KEY_SLEEP_TRIGGER_SEC = intPreferencesKey("sleep_trigger_sec")
 
         const val DEFAULT_ALARM_DURATION_MIN = 30
-        const val DEFAULT_SLEEP_TRIGGER_MIN = 5
+        const val DEFAULT_SLEEP_TRIGGER_SEC = 300
     }
 
     // ---- 用户设置 ----
@@ -33,16 +33,16 @@ class NapRepository @Inject constructor(
         prefs[KEY_ALARM_DURATION_MIN] ?: DEFAULT_ALARM_DURATION_MIN
     }
 
-    val sleepTriggerMin: Flow<Int> = context.dataStore.data.map { prefs ->
-        prefs[KEY_SLEEP_TRIGGER_MIN] ?: DEFAULT_SLEEP_TRIGGER_MIN
+    val sleepTriggerSec: Flow<Int> = context.dataStore.data.map { prefs ->
+        prefs[KEY_SLEEP_TRIGGER_SEC] ?: DEFAULT_SLEEP_TRIGGER_SEC
     }
 
     suspend fun setAlarmDuration(minutes: Int) {
         context.dataStore.edit { it[KEY_ALARM_DURATION_MIN] = minutes }
     }
 
-    suspend fun setSleepTrigger(minutes: Int) {
-        context.dataStore.edit { it[KEY_SLEEP_TRIGGER_MIN] = minutes }
+    suspend fun setSleepTrigger(seconds: Int) {
+        context.dataStore.edit { it[KEY_SLEEP_TRIGGER_SEC] = seconds }
     }
 
     // ---- 午休记录 ----

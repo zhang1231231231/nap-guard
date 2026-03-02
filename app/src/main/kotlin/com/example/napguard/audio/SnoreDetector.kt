@@ -52,28 +52,25 @@ class SnoreDetector {
         // ── 频率过滤参数（方案 C） ──────────────────────────────
         /** 鼾声频率低端（Hz）*/
         const val SNORE_FREQ_MIN = 50.0
-        /** 鼾声频率高端（Hz）*/
-        const val SNORE_FREQ_MAX = 400.0
-        /** 低频能量占全频段的最低比例，超过才认为是鼾声 */
-        const val LOW_FREQ_ENERGY_RATIO_THRESHOLD = 0.55
+        /** 鼾声频率高端（Hz）- 复盖到 600Hz 以配合实际鼾声频率分布 */
+        const val SNORE_FREQ_MAX = 600.0
+        /** 低频能量占全频段的最低比例，超过才认为是鼾声 - 降至 0.30 以容害调语音和环境音的干扰 */
+        const val LOW_FREQ_ENERGY_RATIO_THRESHOLD = 0.30
 
         // ── 振幅阈值参数（自适应噪底） ────────────────────────────
         /** 环境噪底校准窗口（前 N 帧用于估算安静环境分贝）*/
-        const val CALIBRATION_FRAMES = 200      // 约 20 秒
+        const val CALIBRATION_FRAMES = 30       // 约 3 秒
         /** 鼾声需高于噪底多少 dB 才算有效 */
-        const val NOISE_MARGIN_DB = 12.0
-        /** 绝对最小阈值：即使在非常安静的环境中，也不会把细微呼吸声误判为鼾声 */
-        const val MIN_SNORE_DB = 38.0
+        const val NOISE_MARGIN_DB = 5.0
+        /** 绝对最小阈值，即使在非常安静的环境中，也不会把细微呼吸声误判为鼾声 */
+        const val MIN_SNORE_DB = 28.0
         /** 绝对最大阈值：防止噪底校准偏高导致灵敏度丢失 */
-        const val MAX_SNORE_DB = 58.0
+        const val MAX_SNORE_DB = 50.0
 
         // ── 滑动窗口参数（方案 A） ──────────────────────────────
-        /** 滑动窗口大小（帧数），100ms 每帧，5分钟 = 3000 帧 */
-        const val WINDOW_SIZE_FRAMES = 3000
-        /** 窗口内鼾声帧占比超过此值才判定为入睡 */
-        const val SNORE_RATIO_THRESHOLD = 0.60
-        /** 最小有效窗口大小：至少需要积累 1 分钟数据后才开始判定 */
-        const val MIN_VALID_WINDOW = 600
+        /** 窗口内鼾声帧占比超过此值才判定为入睡
+         *  真实鼾声是阵发性的（打一声、停一停、继续），10秒窗口内通常只有 10%~20% 的帧有鼾声 */
+        const val SNORE_RATIO_THRESHOLD = 0.10
     }
 
     // ── 状态 ─────────────────────────────────────────────────────
@@ -82,11 +79,25 @@ class SnoreDetector {
     private val calibrationBuffer = mutableListOf<Double>()
     private var isCalibrated = false
 
+    /** 滑动窗口大小（帧数），100ms 每帧 */
+    private var windowSizeFrames = 3000 // 默认 5 分钟
+    /** 最小有效窗口大小 */
+    private var minValidWindow = 600    // 默认 1 分钟
+
     /** 滑动窗口（循环队列），存每帧是否为鼾声 */
-    private val snoreWindow = ArrayDeque<Boolean>(WINDOW_SIZE_FRAMES + 1)
+    private val snoreWindow = ArrayDeque<Boolean>()
     private var snoreFrameCount = 0
 
-    // ── 公开 API ──────────────────────────────────────────────────
+    /**
+     * 更新滑动窗口参数
+     * @param durationSec 期待的入睡判定时长（秒）
+     */
+    fun updateWindowSize(durationSec: Int) {
+        val newWindowSize = (durationSec * 10).coerceAtLeast(10) // 每秒 10 帧
+        windowSizeFrames = newWindowSize
+        minValidWindow = (newWindowSize * 0.8).toInt().coerceAtLeast(1) // 至少需要 80% 的数据量
+        reset()
+    }
 
     data class AudioFrame(
         val decibels: Double,
@@ -186,8 +197,19 @@ class SnoreDetector {
         // ─ 步骤 4：双维度综合判定 ─────────────────────────────────
         val isSnoreThisFrame = isAmplitudeDetected && isFrequencyMatch
 
+        if (isSnoreThisFrame) {
+            try {
+                val ratio = if (snoreWindow.size >= minValidWindow) snoreFrameCount.toDouble() / snoreWindow.size else -1.0
+                Log.d(TAG, "检测分析: dB=${String.format("%.1f", db)}, 频率=${String.format("%.1f", dominantFreq)}Hz, 低频占比=${String.format("%.2f", lowFreqRatio)}, 识别结果=$isSnoreThisFrame, 窗口占比=${String.format("%.3f", ratio)}(${snoreWindow.size}/${minValidWindow})")
+            } catch (e: Exception) {}
+        } else if (isAmplitudeDetected) {
+            try {
+                Log.d(TAG, "检测分析: dB=${String.format("%.1f", db)}, 频率=${String.format("%.1f", dominantFreq)}Hz, 低频占比=${String.format("%.2f", lowFreqRatio)}, 识别结果=false")
+            } catch (e: Exception) {}
+        }
+
         // ─ 步骤 5：更新滑动窗口 ──────────────────────────────────
-        if (snoreWindow.size >= WINDOW_SIZE_FRAMES) {
+        if (snoreWindow.size >= windowSizeFrames) {
             val evicted = snoreWindow.pollFirst()!!
             if (evicted) snoreFrameCount--
         }
@@ -195,7 +217,7 @@ class SnoreDetector {
         if (isSnoreThisFrame) snoreFrameCount++
 
         // 滑动窗口鼾声占比（只有窗口积累到最小有效大小后才计算）
-        val snoreRatio = if (snoreWindow.size >= MIN_VALID_WINDOW) {
+        val snoreRatio = if (snoreWindow.size >= minValidWindow) {
             snoreFrameCount.toDouble() / snoreWindow.size
         } else {
             0.0 // 数据不足，不做判断
@@ -217,7 +239,7 @@ class SnoreDetector {
      * 返回当前滑动窗口的鼾声占比
      */
     fun currentSnoreRatio(): Double {
-        if (snoreWindow.size < MIN_VALID_WINDOW) return 0.0
+        if (snoreWindow.size < minValidWindow) return 0.0
         return snoreFrameCount.toDouble() / snoreWindow.size
     }
 

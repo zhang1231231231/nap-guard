@@ -69,7 +69,7 @@ fun DashboardScreen(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         if (isGranted) {
-            startMonitorService(context, uiState.alarmDurationMin, uiState.sleepTriggerMin)
+            startMonitorService(context, uiState.alarmDurationMin, uiState.sleepTriggerSec)
             onStartMonitoring()
         } else {
             Toast.makeText(context, "需要麦克风权限来监测鼾声", Toast.LENGTH_SHORT).show()
@@ -80,7 +80,7 @@ fun DashboardScreen(
         DurationPickerDialog(
             title = "设置闹钟时长",
             currentValue = uiState.alarmDurationMin,
-            min = 10, max = 120, step = 5,
+            min = 1, max = 120, step = 1,
             unit = "分钟",
             onDismiss = { showAlarmDialog = false },
             onConfirm = { viewModel.setAlarmDuration(it); showAlarmDialog = false }
@@ -90,9 +90,9 @@ fun DashboardScreen(
     if (showTriggerDialog) {
         DurationPickerDialog(
             title = "设置入睡判定时长",
-            currentValue = uiState.sleepTriggerMin,
-            min = 1, max = 15, step = 1,
-            unit = "分钟",
+            currentValue = uiState.sleepTriggerSec,
+            min = 10, max = 900, step = 10,
+            unit = "秒",
             onDismiss = { showTriggerDialog = false },
             onConfirm = { viewModel.setSleepTrigger(it); showTriggerDialog = false }
         )
@@ -142,7 +142,7 @@ fun DashboardScreen(
                 // 入睡判定
                 SettingsRow(
                     label = "入睡判定 (持续打鼾)",
-                    value = "${uiState.sleepTriggerMin} 分钟",
+                    value = formatTriggerValue(uiState.sleepTriggerSec),
                     showDivider = false,
                     onClick = { showTriggerDialog = true },
                 )
@@ -160,7 +160,7 @@ fun DashboardScreen(
                             Manifest.permission.RECORD_AUDIO
                         )
                         if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
-                            startMonitorService(context, uiState.alarmDurationMin, uiState.sleepTriggerMin)
+                            startMonitorService(context, uiState.alarmDurationMin, uiState.sleepTriggerSec)
                             onStartMonitoring()
                         } else {
                             permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
@@ -282,6 +282,11 @@ private fun SettingsRow(
 }
 
 @Composable
+private fun formatTriggerValue(seconds: Int): String {
+    return if (seconds < 60) "$seconds 秒" else "${seconds / 60} 分钟"
+}
+
+@Composable
 private fun DurationPickerDialog(
     title: String,
     currentValue: Int,
@@ -330,11 +335,11 @@ private fun DurationPickerDialog(
     )
 }
 
-private fun startMonitorService(context: Context, alarmDurationMin: Int, sleepTriggerMin: Int) {
+private fun startMonitorService(context: Context, alarmDurationMin: Int, sleepTriggerSec: Int) {
     val intent = Intent(context, NapMonitorService::class.java).apply {
         action = NapMonitorService.ACTION_START
         putExtra(NapMonitorService.EXTRA_ALARM_DURATION_MIN, alarmDurationMin)
-        putExtra(NapMonitorService.EXTRA_SLEEP_TRIGGER_MIN, sleepTriggerMin)
+        putExtra(NapMonitorService.EXTRA_SLEEP_TRIGGER_SEC, sleepTriggerSec)
     }
     context.startForegroundService(intent)
 }

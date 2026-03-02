@@ -48,7 +48,7 @@ class NapMonitorService : Service() {
         const val ACTION_STOP = "com.example.napguard.ACTION_STOP"
 
         const val EXTRA_ALARM_DURATION_MIN = "alarm_duration_min"
-        const val EXTRA_SLEEP_TRIGGER_MIN = "sleep_trigger_min"
+        const val EXTRA_SLEEP_TRIGGER_SEC = "sleep_trigger_sec"
 
         // 状态广播
         const val BROADCAST_STATE = "com.example.napguard.STATE_UPDATE"
@@ -56,6 +56,7 @@ class NapMonitorService : Service() {
         const val EXTRA_ELAPSED_MS = "elapsed_ms"
         const val EXTRA_SNORE_DURATION_MS = "snore_duration_ms"
         const val EXTRA_COUNTDOWN_MS = "countdown_ms"
+        const val EXTRA_IS_SNORING = "is_snoring"
 
         const val STATE_LISTENING = "LISTENING"
         const val STATE_SNORE_DETECTED = "SNORE_DETECTED"
@@ -75,7 +76,7 @@ class NapMonitorService : Service() {
 
     private var startTimeMs = 0L
     private var alarmDurationMs = 30 * 60 * 1000L
-    private var sleepTriggerMs = 5 * 60 * 1000L
+    private var sleepTriggerSec = 300
 
     // 入睡判定：使用滑动窗口鼾声占比（方案A+C）
     private var lastFrameTimeMs = 0L
@@ -93,7 +94,7 @@ class NapMonitorService : Service() {
         when (intent?.action) {
             ACTION_START -> {
                 alarmDurationMs = (intent.getIntExtra(EXTRA_ALARM_DURATION_MIN, 30) * 60_000).toLong()
-                sleepTriggerMs = (intent.getIntExtra(EXTRA_SLEEP_TRIGGER_MIN, 5) * 60_000).toLong()
+                sleepTriggerSec = intent.getIntExtra(EXTRA_SLEEP_TRIGGER_SEC, 300)
                 startMonitoring()
             }
             ACTION_STOP -> stopSelf()
@@ -105,7 +106,7 @@ class NapMonitorService : Service() {
         startTimeMs = System.currentTimeMillis()
         currentState = STATE_LISTENING
         lastFrameTimeMs = startTimeMs
-        snoreDetector.reset()
+        snoreDetector.updateWindowSize(sleepTriggerSec)
 
         startForeground(NOTIFICATION_ID, buildNotification("正在监控睡眠..."))
 
@@ -118,29 +119,38 @@ class NapMonitorService : Service() {
                 }
             }
 
-            // 音频检测协程
-            snoreDetector.audioFrameFlow()
-                .onEach { frame ->
+            // 音频检测协程——直接用 collect 而非 launchIn，确保每帧都被处理
+            launch {
+                Log.d(TAG, "开始收集音频帧流...")
+                snoreDetector.audioFrameFlow().collect { frame ->
                     val now = System.currentTimeMillis()
                     lastFrameTimeMs = now
 
                     when (currentState) {
                         STATE_LISTENING, STATE_SNORE_DETECTED ->
                         {
-                            // 用 snoreRatio 而非连续时长来判定入睡（方案 A+C）
                             currentState = if (frame.isSnoreDetected) STATE_SNORE_DETECTED else STATE_LISTENING
 
-                            // snoreRatio > 0 表示窗口数据已积累到最小有效量
-                            if (frame.snoreRatio >= SnoreDetector.SNORE_RATIO_THRESHOLD) {
+                            val ratio = frame.snoreRatio
+                            if (ratio > 0.0) {
+                                Log.d(TAG, "帧处理: state=$currentState, ratio=${String.format("%.3f", ratio)}, threshold=${SnoreDetector.SNORE_RATIO_THRESHOLD}")
+                            }
+                            if (ratio >= SnoreDetector.SNORE_RATIO_THRESHOLD) {
+                                Log.d(TAG, ">>> 判定入睡! ratio=$ratio, 进入倒计时")
                                 sleepDetectedTimeMs = now
                                 currentState = STATE_SLEEPING
+                                broadcastState() // 立刻广播新状态
                                 startAlarmCountdown()
+                            }
+
+                            if (frame.isSnoreDetected) {
+                                broadcastState(isSnoring = true)
                             }
                         }
                         else -> { /* 睡眠/响铃阶段无需处理 */ }
                     }
                 }
-                .launchIn(this)
+            }
         }
     }
 
@@ -181,17 +191,31 @@ class NapMonitorService : Service() {
         stopSelf()
     }
 
-    private fun broadcastState() {
+    private fun broadcastState(isSnoring: Boolean = false) {
         val now = System.currentTimeMillis()
+        val ratio = (snoreDetector.currentSnoreRatio() * 100).toLong()
+        val countdownMs = if (currentState == STATE_SLEEPING) {
+            alarmDurationMs - (now - sleepDetectedTimeMs)
+        } else 0L
+
+        // 更新全局 StateFlow（给 ViewModel 用）
+        NapStateHolder.update {
+            copy(
+                serviceState = currentState,
+                elapsedMs = now - startTimeMs,
+                snoreRatio = ratio.toInt(),
+                countdownMs = countdownMs,
+                isSnoring = isSnoring,
+            )
+        }
+
+        // 同时保留 BroadcastReceiver（兼容）
         val intent = Intent(BROADCAST_STATE).apply {
             putExtra(EXTRA_STATE, currentState)
             putExtra(EXTRA_ELAPSED_MS, now - startTimeMs)
-            // 用滑动窗口鼾声占比（0~100）代替旧的连续打鼾时长
-            putExtra(EXTRA_SNORE_DURATION_MS, (snoreDetector.currentSnoreRatio() * 100).toLong())
-            val countdownMs = if (currentState == STATE_SLEEPING) {
-                alarmDurationMs - (now - sleepDetectedTimeMs)
-            } else 0L
+            putExtra(EXTRA_SNORE_DURATION_MS, ratio)
             putExtra(EXTRA_COUNTDOWN_MS, countdownMs)
+            putExtra(EXTRA_IS_SNORING, isSnoring)
         }
         sendBroadcast(intent)
     }

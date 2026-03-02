@@ -3,8 +3,10 @@ package com.example.napguard.ui.monitoring
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -115,23 +117,52 @@ fun MonitoringScreen(
                 verticalArrangement = Arrangement.spacedBy(24.dp),
             ) {
                 val isSnoreActive = uiState.serviceState == NapMonitorService.STATE_SNORE_DETECTED
-                PulsingMicIcon(isActive = isSnoreActive)
+                PulsingMicIcon(
+                    isActive = isSnoreActive,
+                    isSensing = uiState.isSnoring
+                )
 
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
-                    Text(
-                        text = if (isSnoreActive) "已检测到鼾声..." else "正在检测鼾声...",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onBackground,
-                    )
-                    if (uiState.snoreDurationMs > 0) {
-                        Text(
-                            text = "已持续检测 ${uiState.snoreDurationMs / 60_000} 分钟 ${(uiState.snoreDurationMs % 60_000) / 1000} 秒",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
+                    when (uiState.serviceState) {
+                        NapMonitorService.STATE_SLEEPING -> {
+                            Text(
+                                text = "😴 已入睡，闹钟倒计时中",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Bold
+                            )
+                            if (uiState.countdownMs > 0) {
+                                Text(
+                                    text = "还有 ${formatDuration(uiState.countdownMs)} 出发",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
+                        else -> {
+                            Text(
+                                text = if (isSnoreActive) "已检测到鼾声..." else "正在检测鼾声...",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onBackground,
+                            )
+                            if (uiState.snoreRatio > 0) {
+                                Text(
+                                    text = "检测进度: ${uiState.snoreRatio}%",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            } else {
+                                Text(
+                                    text = "等待数据积累...",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -164,7 +195,7 @@ fun MonitoringScreen(
 }
 
 @Composable
-private fun PulsingMicIcon(isActive: Boolean) {
+private fun PulsingMicIcon(isActive: Boolean, isSensing: Boolean) {
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
     val scale by infiniteTransition.animateFloat(
         initialValue = 1f,
@@ -176,12 +207,19 @@ private fun PulsingMicIcon(isActive: Boolean) {
         label = "scale",
     )
 
+    val sensingScale = animateFloatAsState(
+        targetValue = if (isSensing) 1.3f else 1f,
+        animationSpec = spring(dampingRatio = 0.4f, stiffness = 400f),
+        label = "sensing"
+    )
+
     Box(
         modifier = Modifier
             .size(120.dp)
-            .scale(scale)
+            .scale(scale * sensingScale.value)
             .background(
-                color = if (isActive) MaterialTheme.colorScheme.primaryContainer
+                color = if (isSensing) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                else if (isActive) MaterialTheme.colorScheme.primaryContainer
                 else MaterialTheme.colorScheme.surfaceVariant,
                 shape = CircleShape,
             ),
@@ -190,7 +228,8 @@ private fun PulsingMicIcon(isActive: Boolean) {
         Icon(
             imageVector = Icons.Default.Mic,
             contentDescription = "麦克风",
-            tint = if (isActive) MaterialTheme.colorScheme.primary
+            tint = if (isSensing) MaterialTheme.colorScheme.primary
+            else if (isActive) MaterialTheme.colorScheme.primary
             else MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(40.dp),
         )

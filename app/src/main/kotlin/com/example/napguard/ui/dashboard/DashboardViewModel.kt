@@ -14,7 +14,7 @@ import javax.inject.Inject
 
 data class DashboardUiState(
     val alarmDurationMin: Int = 30,
-    val sleepTriggerMin: Int = 5,
+    val sleepTriggerSec: Int = 300,
     val latestRecord: NapRecord? = null,
 )
 
@@ -25,12 +25,12 @@ class DashboardViewModel @Inject constructor(
 
     val uiState: StateFlow<DashboardUiState> = combine(
         repository.alarmDurationMin,
-        repository.sleepTriggerMin,
+        repository.sleepTriggerSec,
         repository.getLatestRecord(),
     ) { alarmDuration, sleepTrigger, latestRecord ->
         DashboardUiState(
             alarmDurationMin = alarmDuration,
-            sleepTriggerMin = sleepTrigger,
+            sleepTriggerSec = sleepTrigger,
             latestRecord = latestRecord,
         )
     }.stateIn(
@@ -43,7 +43,7 @@ class DashboardViewModel @Inject constructor(
         viewModelScope.launch { repository.setAlarmDuration(minutes) }
     }
 
-    fun setSleepTrigger(minutes: Int) {
-        viewModelScope.launch { repository.setSleepTrigger(minutes) }
+    fun setSleepTrigger(seconds: Int) {
+        viewModelScope.launch { repository.setSleepTrigger(seconds) }
     }
 }

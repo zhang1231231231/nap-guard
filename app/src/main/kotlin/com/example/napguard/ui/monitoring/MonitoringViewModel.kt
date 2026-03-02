@@ -1,27 +1,25 @@
 package com.example.napguard.ui.monitoring
 
 import android.app.Application
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.napguard.service.NapMonitorService
+import com.example.napguard.service.NapStateHolder
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 data class MonitoringUiState(
     val serviceState: String = NapMonitorService.STATE_LISTENING,
     val elapsedMs: Long = 0L,
-    val snoreDurationMs: Long = 0L,
+    val snoreRatio: Int = 0,
     val countdownMs: Long = 0L,
     val isAlarming: Boolean = false,
+    val isSnoring: Boolean = false,
 )
 
 @HiltViewModel
@@ -29,45 +27,28 @@ class MonitoringViewModel @Inject constructor(
     application: Application,
 ) : AndroidViewModel(application) {
 
-    private val _uiState = MutableStateFlow(MonitoringUiState())
-    val uiState: StateFlow<MonitoringUiState> = _uiState.asStateFlow()
-
-    private val broadcastReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            if (intent.action == NapMonitorService.BROADCAST_STATE) {
-                val state = intent.getStringExtra(NapMonitorService.EXTRA_STATE) ?: return
-                _uiState.update {
-                    it.copy(
-                        serviceState = state,
-                        elapsedMs = intent.getLongExtra(NapMonitorService.EXTRA_ELAPSED_MS, 0L),
-                        snoreDurationMs = intent.getLongExtra(NapMonitorService.EXTRA_SNORE_DURATION_MS, 0L),
-                        countdownMs = intent.getLongExtra(NapMonitorService.EXTRA_COUNTDOWN_MS, 0L),
-                        isAlarming = state == NapMonitorService.STATE_ALARMING,
-                    )
-                }
-            }
-        }
-    }
-
-    init {
-        val filter = IntentFilter(NapMonitorService.BROADCAST_STATE)
-        ContextCompat.registerReceiver(
-            application,
-            broadcastReceiver,
-            filter,
-            ContextCompat.RECEIVER_NOT_EXPORTED,
+    // 直接从全局 StateFlow 转换，绕过 BroadcastReceiver
+    val uiState: StateFlow<MonitoringUiState> = NapStateHolder.state.map { napState ->
+        android.util.Log.d("MonitorVM", "状态更新: serviceState=${napState.serviceState}, countdown=${napState.countdownMs}")
+        MonitoringUiState(
+            serviceState = napState.serviceState,
+            elapsedMs = napState.elapsedMs,
+            snoreRatio = napState.snoreRatio,
+            countdownMs = napState.countdownMs,
+            isAlarming = napState.serviceState == NapMonitorService.STATE_ALARMING,
+            isSnoring = napState.isSnoring,
         )
-    }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = MonitoringUiState(),
+    )
 
     fun stopService() {
         val intent = Intent(getApplication(), NapMonitorService::class.java).apply {
             action = NapMonitorService.ACTION_STOP
         }
         getApplication<Application>().startService(intent)
-    }
-
-    override fun onCleared() {
-        getApplication<Application>().unregisterReceiver(broadcastReceiver)
-        super.onCleared()
+        NapStateHolder.reset()
     }
 }
