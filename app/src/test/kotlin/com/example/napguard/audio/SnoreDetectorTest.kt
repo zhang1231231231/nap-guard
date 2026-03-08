@@ -1,6 +1,7 @@
 package com.example.napguard.audio
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -166,6 +167,70 @@ class SnoreDetectorTest {
         assertTrue("应检测到至少一帧鼾声", snoreFrames > 0)
     }
 
+    @Test
+    fun testSleepDecision_snoreMale_reachesThresholdIn10SecWindow() {
+        val file = File("src/test/assets/snore_male.wav")
+        assertTrue("测试音频文件不存在: ${file.absolutePath}", file.exists())
+
+        detector.updateWindowSize(10)
+        val frames = processWavFile(file, detectSampleRate(file))
+        val maxRatio = frames.maxOfOrNull { it.snoreRatio } ?: 0.0
+        val reached = frames.any { it.snoreRatio >= SnoreDetector.SNORE_RATIO_THRESHOLD }
+
+        println("=== 10秒窗口：snore_male.wav ===")
+        println("  最大窗口鼾声占比: ${String.format("%.3f", maxRatio)}")
+        println("  入睡阈值: ${String.format("%.3f", SnoreDetector.SNORE_RATIO_THRESHOLD)}")
+        println("  是否进入已入睡判定: $reached")
+
+        assertTrue("10秒窗口下，snore_male 应该触发入睡判定，实际 maxRatio=$maxRatio", reached)
+    }
+
+    @Test
+    fun testSleepDecision_speechTalking_notReachThresholdIn10SecWindow() {
+        val file = File("src/test/assets/negative/speech_talking.wav")
+        assertTrue("测试音频文件不存在: ${file.absolutePath}", file.exists())
+
+        detector.updateWindowSize(10)
+        val frames = processWavFile(file, detectSampleRate(file))
+        val maxRatio = frames.maxOfOrNull { it.snoreRatio } ?: 0.0
+        val reached = frames.any { it.snoreRatio >= SnoreDetector.SNORE_RATIO_THRESHOLD }
+
+        println("=== 10秒窗口：speech_talking.wav ===")
+        println("  最大窗口鼾声占比: ${String.format("%.3f", maxRatio)}")
+        println("  入睡阈值: ${String.format("%.3f", SnoreDetector.SNORE_RATIO_THRESHOLD)}")
+        println("  是否误触发已入睡判定: $reached")
+
+        assertFalse("10秒窗口下，说话声不应触发入睡判定，实际 maxRatio=$maxRatio", reached)
+    }
+
+    @Test
+    fun testSleepDecision_reportAllSamplesIn10SecWindow() {
+        val samples = listOf(
+            "正样本 snore_basic" to "src/test/assets/snore_basic.wav",
+            "正样本 snore_male" to "src/test/assets/snore_male.wav",
+            "负样本 speech_talking" to "src/test/assets/negative/speech_talking.wav",
+            "负样本 speech_baby" to "src/test/assets/negative/speech_baby.wav",
+            "负样本 speech_restaurant" to "src/test/assets/negative/speech_restaurant.wav",
+            "负样本 car_traffic" to "src/test/assets/negative/car_traffic.wav",
+            "负样本 car_race" to "src/test/assets/negative/car_race.wav",
+            "负样本 car_door" to "src/test/assets/negative/car_door.wav",
+        )
+
+        println("=== 10秒窗口：全部音频样本报告 ===")
+        samples.forEach { (label, path) ->
+            val file = File(path)
+            assertTrue("测试音频文件不存在: ${file.absolutePath}", file.exists())
+
+            detector.updateWindowSize(10)
+            val frames = processWavFile(file, detectSampleRate(file))
+            val maxRatio = frames.maxOfOrNull { it.snoreRatio } ?: 0.0
+            val reached = frames.any { it.snoreRatio >= SnoreDetector.SNORE_RATIO_THRESHOLD }
+            val snoreFrames = frames.count { it.isSnoreDetected }
+
+            println("$label -> frames=${frames.size}, snoreFrames=$snoreFrames, maxRatio=${String.format("%.3f", maxRatio)}, reached=$reached")
+        }
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
     // 模块四：负样本测试（验证算法不会把非打鼾声误判）
     // ─────────────────────────────────────────────────────────────────────────
@@ -274,15 +339,31 @@ class SnoreDetectorTest {
             monoShorts.add(((left.toInt() + right.toInt()) / 2).toShort())
         }
 
-        // 按实际采样率计算 100ms 的帧大小
-        val frameSize = (fileSampleRate * 0.1).toInt()
+        val normalized = resampleToDetectorRate(monoShorts, fileSampleRate, SnoreDetector.SAMPLE_RATE)
+
+        // 统一重采样到检测器采样率后，再按 100ms 分帧
+        val frameSize = (SnoreDetector.SAMPLE_RATE * 0.1).toInt()
         val results = mutableListOf<SnoreDetector.AudioFrame>()
         var offset = 0
-        while (offset + frameSize <= monoShorts.size) {
-            val frame = ShortArray(frameSize) { monoShorts[offset + it] }
+        while (offset + frameSize <= normalized.size) {
+            val frame = ShortArray(frameSize) { normalized[offset + it] }
             results.add(detector.analyzeFrame(frame, frameSize))
             offset += frameSize
         }
         return results
+    }
+
+    private fun resampleToDetectorRate(samples: List<Short>, fromRate: Int, toRate: Int): List<Short> {
+        if (samples.isEmpty() || fromRate <= 0 || fromRate == toRate) return samples
+
+        val targetSize = (samples.size.toLong() * toRate / fromRate).toInt().coerceAtLeast(1)
+        return List(targetSize) { index ->
+            val sourcePos = index.toDouble() * fromRate / toRate
+            val baseIndex = sourcePos.toInt().coerceIn(0, samples.lastIndex)
+            val nextIndex = (baseIndex + 1).coerceAtMost(samples.lastIndex)
+            val fraction = sourcePos - baseIndex
+            val interpolated = samples[baseIndex] * (1.0 - fraction) + samples[nextIndex] * fraction
+            interpolated.toInt().coerceIn(Short.MIN_VALUE.toInt(), Short.MAX_VALUE.toInt()).toShort()
+        }
     }
 }

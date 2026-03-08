@@ -94,7 +94,7 @@ class NapMonitorService : Service() {
         when (intent?.action) {
             ACTION_START -> {
                 alarmDurationMs = (intent.getIntExtra(EXTRA_ALARM_DURATION_MIN, 30) * 60_000).toLong()
-                sleepTriggerSec = intent.getIntExtra(EXTRA_SLEEP_TRIGGER_SEC, 300)
+                sleepTriggerSec = intent.getIntExtra(EXTRA_SLEEP_TRIGGER_SEC, 300).coerceAtLeast(10)
                 startMonitoring()
             }
             ACTION_STOP -> stopSelf()

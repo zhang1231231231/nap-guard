@@ -2,8 +2,8 @@ package com.example.napguard.audio
 
 import kotlin.math.PI
 import kotlin.math.cos
+import kotlin.math.ln
 import kotlin.math.sin
-import kotlin.math.sqrt
 
 /**
  * 简单的基 2 Cooley-Tukey FFT 实现（纯 Kotlin，无外部依赖）
@@ -26,9 +26,15 @@ object SimpleFFT {
 
         // 转换为浮点复数数组（实部 = 样本值，虚部 = 0）
         // 应用汉宁窗（Hanning Window）减少频谱泄漏
+        var mean = 0.0
+        for (i in 0 until n) {
+            mean += samples[i].toDouble()
+        }
+        mean /= n
+
         val real = DoubleArray(n) { i ->
             val window = 0.5 * (1.0 - cos(2.0 * PI * i / (n - 1)))
-            samples[i].toDouble() * window
+            (samples[i].toDouble() - mean) * window
         }
         val imag = DoubleArray(n) { 0.0 }
 
@@ -110,6 +116,18 @@ object SimpleFFT {
         val powers: DoubleArray,      // 每个频率箱的功率
         val freqResolution: Double,   // 每个频率箱的宽度（Hz）
     ) {
+        fun energyInRange(minHz: Double, maxHz: Double): Double {
+            if (powers.isEmpty()) return 0.0
+            val minBin = (minHz / freqResolution).toInt().coerceAtLeast(0)
+            val maxBin = (maxHz / freqResolution).toInt().coerceAtMost(powers.size - 1)
+            if (maxBin < minBin) return 0.0
+            var sum = 0.0
+            for (i in minBin..maxBin) {
+                sum += powers[i]
+            }
+            return sum
+        }
+
         /**
          * 计算指定频率范围内的总能量占比（相对于全频段总能量）
          */
@@ -117,11 +135,33 @@ object SimpleFFT {
             val totalEnergy = powers.sum()
             if (totalEnergy <= 0.0) return 0.0
 
+            val rangeEnergy = energyInRange(minHz, maxHz)
+            return rangeEnergy / totalEnergy
+        }
+
+        /**
+         * 频谱平坦度：越接近 1 越像宽频噪声，越接近 0 越像有明显峰值的信号。
+         */
+        fun spectralFlatnessInRange(minHz: Double, maxHz: Double): Double {
+            if (powers.isEmpty()) return 1.0
             val minBin = (minHz / freqResolution).toInt().coerceAtLeast(0)
             val maxBin = (maxHz / freqResolution).toInt().coerceAtMost(powers.size - 1)
+            if (maxBin < minBin) return 1.0
 
-            val rangeEnergy = powers.slice(minBin..maxBin).sum()
-            return rangeEnergy / totalEnergy
+            var logSum = 0.0
+            var linearSum = 0.0
+            var count = 0
+            for (i in minBin..maxBin) {
+                val power = powers[i].coerceAtLeast(1e-12)
+                logSum += ln(power)
+                linearSum += power
+                count++
+            }
+            if (count == 0 || linearSum <= 0.0) return 1.0
+
+            val geometricMean = kotlin.math.exp(logSum / count)
+            val arithmeticMean = linearSum / count
+            return (geometricMean / arithmeticMean).coerceIn(0.0, 1.0)
         }
 
         /**
